@@ -1,0 +1,15 @@
+$vCenters = ("dc1-vcenter-robo.paylocity.com","dc1qa-vcenter.paylocity.com","dc1int-vcenter.paylocity.com","dc1pre-vcenter.paylocity.com","dc1derp-vcenter.paylocity.com","dc1prod-vcenter.paylocity.com","dr-vcenter-01.paylocity.com","kewi-vcenter.paylocity.com")
+foreach ($vCenter in $vCenters) {
+    connect-viserver $vCenter
+    $vmhost=get-vmhost
+    foreach ($esxi in $vmhost) {
+        $esxcli=$esxi | get-esxcli
+        $esxcli.system.hostname.set("paylocity.com")
+        $esxi | get-vmhostservice | where {$_.key -eq "vmsyslogd"} | Restart-VMHostService -confirm:$false
+    }
+    foreach ($esxi in $vmhost) {
+        $esxcli=$esxi | get-esxcli
+        $esxcli.system.hostname.get()
+    }
+    disconnect-viserver -confirm:$false
+}
